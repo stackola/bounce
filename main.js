@@ -59,10 +59,10 @@ var Particle = (function () {
     };
     Particle.prototype.tick = function () {
         this.opacity = this.opacity * this.shrinkingFactor;
-        this.light -= 0.5;
-        if (this.light < 0) {
-            this.light == 0;
-        }
+        //this.light -= 0.5;
+        //if (this.light < 0){
+        //	this.light == 0;
+        //}
         this.age++;
         // Check for bounce
         if (this.position.y >= config.height - config.floorHeight && this.isBouncing == false) {
@@ -98,6 +98,9 @@ var ParticleSystem = (function () {
         this.particles.push(new Particle());
     };
     ParticleSystem.prototype.tick = function () {
+        this._addParticle();
+        this._addParticle();
+        this._addParticle();
         // Filter old particles from array
         this.particles = this.particles.filter(function (v) {
             return v.age < v.maxAge;
@@ -161,7 +164,6 @@ var Game = (function () {
         this.context.fillText(fps.toFixed(0) + " fps", 20, 20);
     };
     Game.prototype.tick = function () {
-        this.particleSystem._addParticle();
         this.particleSystem.tick();
     };
     return Game;

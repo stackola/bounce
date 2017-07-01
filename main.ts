@@ -78,10 +78,10 @@ class Particle {
 
 	tick(): void {
 		this.opacity = this.opacity * this.shrinkingFactor;
-		this.light -= 0.5;
-		if (this.light < 0){
-			this.light == 0;
-		}
+		//this.light -= 0.5;
+		//if (this.light < 0){
+		//	this.light == 0;
+		//}
 		this.age++;
 		// Check for bounce
 		if (this.position.y >= config.height - config.floorHeight && this.isBouncing == false) {
@@ -121,11 +121,14 @@ class ParticleSystem {
 	}.bind(this);
 
 	tick(): void {
+		this._addParticle();
+		this._addParticle();
+		this._addParticle();
 		// Filter old particles from array
 		this.particles = this.particles.filter(function(v) {
 			return v.age < v.maxAge;
 		});
-		
+
 		// Call tick on all particles left
 		for (var i = 0; i < this.particles.length; ++i) {
 			this.particles[i].tick();
@@ -201,16 +204,15 @@ class Game {
 		this.context2.drawImage(this.canvas, 0, 0);
 
 		// Hacky FPS counter
-		this.context.fillStyle="#ffffff";
+		this.context.fillStyle = "#ffffff";
 		this.context.font = "12px Arial";
-		this.context.fillText(fps.toFixed(0)+" fps",20,20);
+		this.context.fillText(fps.toFixed(0) + " fps", 20, 20);
 
 
 
 	}
 
 	tick(): void {
-		this.particleSystem._addParticle();
 		this.particleSystem.tick();
 	}
 }
@@ -240,7 +242,7 @@ var g = new Game();
 
 //Game loop
 function loop() {
-	countFps();	
+	countFps();
 	// Buffered frames.
 	requestAnimationFrame(loop);
 	g.tick();
@@ -253,13 +255,12 @@ loop();
 
 
 
-
-function countFps(){
-	if(!lastCalledTime) {
+function countFps() {
+	if (!lastCalledTime) {
 		lastCalledTime = Date.now();
-		fps = 0;		
+		fps = 0;
 	}
-	var delta = (Date.now() - lastCalledTime)/1000;
+	var delta = (Date.now() - lastCalledTime) / 1000;
 	lastCalledTime = Date.now();
-	fps = 1/delta;
+	fps = 1 / delta;
 }
