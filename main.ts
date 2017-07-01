@@ -182,6 +182,10 @@ class Game {
 			this.setMousePosition(this.canvas, evt);
 		}.bind(this), false);
 
+		this.canvas.addEventListener('touchmove', function(evt) {
+			this.setMousePositionFromTouch(this.canvas, evt);
+		}.bind(this), false);
+
 
 		// Initialize the particle system
 		this.particleSystem = new ParticleSystem();
@@ -209,6 +213,16 @@ class Game {
 		// Retrieve and set local mouse position
 		var rect = canvas.getBoundingClientRect();
 		var v = new Vector(evt.clientX - rect.left, evt.clientY - rect.top);
+		if (v.y > state.config.height - state.config.floorHeight) {
+			v.y = state.config.height - state.config.floorHeight;
+		}
+		state.mousePosition = v;
+	}
+
+	setMousePositionFromTouch(canvas, evt): void {
+		// Retrieve and set local mouse position
+		var rect = canvas.getBoundingClientRect();
+		var v = new Vector(evt.targetTouches[0].clientX - rect.left, evt.targetTouches[0].clientY - rect.top);
 		if (v.y > state.config.height - state.config.floorHeight) {
 			v.y = state.config.height - state.config.floorHeight;
 		}
