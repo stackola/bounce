@@ -45,17 +45,15 @@ var Particle = (function () {
         this.radius = Math.floor(Math.random() * this.maxRadius) + this.minRadius; // Set random radius between minRadius and minRadius + maxRadius (I guess)
     }
     Particle.prototype.draw = function (ctx) {
-        if (this.age < this.maxAge) {
-            if (this.position.y > config.height - config.floorHeight) {
-                this.position.y = config.height - config.floorHeight;
-            }
-            // Draw
-            ctx.fillStyle = "hsla(" + this.hue + ",100%, " + this.light + "%, " + this.opacity + ")";
-            ctx.beginPath();
-            ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2, true);
-            ctx.closePath();
-            ctx.fill();
+        if (this.position.y > config.height - config.floorHeight) {
+            this.position.y = config.height - config.floorHeight;
         }
+        // Draw
+        ctx.fillStyle = "hsla(" + this.hue + ",100%, " + this.light + "%, " + this.opacity + ")";
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fill();
     };
     Particle.prototype.tick = function () {
         this.opacity = this.opacity * this.shrinkingFactor;
@@ -94,6 +92,10 @@ var ParticleSystem = (function () {
         this.particles.push(new Particle());
     };
     ParticleSystem.prototype.tick = function () {
+        this.particles = this.particles.filter(function (v) {
+            return v.age < v.maxAge;
+        });
+        console.log(this.particles.length, "len of arr");
         for (var i = 0; i < this.particles.length; ++i) {
             this.particles[i].tick();
         }

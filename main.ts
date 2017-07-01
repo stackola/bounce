@@ -59,18 +59,16 @@ class Particle {
 	}
 
 	draw(ctx: CanvasRenderingContext2D): void {
-		if (this.age < this.maxAge) { // If we are too old, skip
-			if (this.position.y > config.height - config.floorHeight) { // If we are below the floor, go to the floor.
-				this.position.y = config.height - config.floorHeight;
-			}
-
-			// Draw
-			ctx.fillStyle = "hsla(" + this.hue + ",100%, " + this.light + "%, " + this.opacity + ")";
-			ctx.beginPath();
-			ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2, true);
-			ctx.closePath();
-			ctx.fill();
+		if (this.position.y > config.height - config.floorHeight) { // If we are below the floor, go to the floor.
+			this.position.y = config.height - config.floorHeight;
 		}
+
+		// Draw
+		ctx.fillStyle = "hsla(" + this.hue + ",100%, " + this.light + "%, " + this.opacity + ")";
+		ctx.beginPath();
+		ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2, true);
+		ctx.closePath();
+		ctx.fill();
 	}
 
 
@@ -115,6 +113,12 @@ class ParticleSystem {
 	}.bind(this);
 
 	tick(): void {
+		// Filter old particles from array
+		this.particles = this.particles.filter(function(v) {
+			return v.age < v.maxAge;
+		});
+		
+		// Call tick on all particles left
 		for (var i = 0; i < this.particles.length; ++i) {
 			this.particles[i].tick();
 		}
