@@ -1,4 +1,6 @@
 // Standard Vector class. X,Y with some methods.
+var lastCalledTime;
+var fps;
 var Vector = (function () {
     function Vector(x, y) {
         this.x = x;
@@ -92,10 +94,11 @@ var ParticleSystem = (function () {
         this.particles.push(new Particle());
     };
     ParticleSystem.prototype.tick = function () {
+        // Filter old particles from array
         this.particles = this.particles.filter(function (v) {
             return v.age < v.maxAge;
         });
-        console.log(this.particles.length, "len of arr");
+        // Call tick on all particles left
         for (var i = 0; i < this.particles.length; ++i) {
             this.particles[i].tick();
         }
@@ -145,9 +148,13 @@ var Game = (function () {
         // Clear canvases
         this.context.clearRect(0, 0, config.width, config.height);
         this.context2.clearRect(0, 0, config.width, config.height);
-        //Draw canvases
+        // Draw canvases
         this.particleSystem.draw(this.context);
         this.context2.drawImage(this.canvas, 0, 0);
+        // Hacky FPS counter
+        this.context.fillStyle = "#ffffff";
+        this.context.font = "12px Arial";
+        this.context.fillText(fps.toFixed(0) + " fps", 20, 20);
     };
     Game.prototype.tick = function () {
         this.particleSystem.tick();
@@ -167,6 +174,7 @@ var config = {
 var g = new Game();
 //Game loop
 function loop() {
+    countFps();
     // Buffered frames.
     requestAnimationFrame(loop);
     g.tick();
@@ -176,3 +184,12 @@ function loop() {
 loop();
 // Async: Add new particle in intervals.
 setInterval(g.particleSystem._addParticle, 10);
+function countFps() {
+    if (!lastCalledTime) {
+        lastCalledTime = Date.now();
+        fps = 0;
+    }
+    var delta = (Date.now() - lastCalledTime) / 1000;
+    lastCalledTime = Date.now();
+    fps = 1 / delta;
+}

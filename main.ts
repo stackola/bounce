@@ -1,4 +1,8 @@
 // Standard Vector class. X,Y with some methods.
+var lastCalledTime;
+var fps;
+
+
 class Vector {
 
 	x: number;
@@ -188,9 +192,16 @@ class Game {
 		this.context.clearRect(0, 0, config.width, config.height);
 		this.context2.clearRect(0, 0, config.width, config.height);
 
-		//Draw canvases
+		// Draw canvases
 		this.particleSystem.draw(this.context);
 		this.context2.drawImage(this.canvas, 0, 0);
+
+		// Hacky FPS counter
+		this.context.fillStyle="#ffffff";
+		this.context.font = "12px Arial";
+		this.context.fillText(fps.toFixed(0)+" fps",20,20);
+
+
 
 	}
 
@@ -198,6 +209,8 @@ class Game {
 		this.particleSystem.tick();
 	}
 }
+
+
 
 // Configure global values
 var config: {
@@ -222,6 +235,8 @@ var g = new Game();
 
 //Game loop
 function loop() {
+	
+	countFps();
 	// Buffered frames.
 	requestAnimationFrame(loop);
 	g.tick();
@@ -234,3 +249,15 @@ loop();
 
 // Async: Add new particle in intervals.
 setInterval(g.particleSystem._addParticle, 10);
+
+
+
+function countFps(){
+	if(!lastCalledTime) {
+		lastCalledTime = Date.now();
+		fps = 0;		
+	}
+	var delta = (Date.now() - lastCalledTime)/1000;
+	lastCalledTime = Date.now();
+	fps = 1/delta;
+}
