@@ -40,11 +40,7 @@ var Vector = (function () {
 var Particle = (function () {
     function Particle(ps) {
         this.velocity = Vector.random().scale(Math.random() * 5 + 1); // New random velocity Vector with length 1-6
-        this.maxRadius = 6;
-        this.minRadius = 2;
-        this.shrinkingFactor = 0.99; // How much to shrink by, every frame. (newRadius = Radius * shrinkingFactor )
         this.age = 0; // How many ticks have we been tracking this Particle?
-        this.maxAge = 300; // After how many ticks do we no longer draw the Particle?
         this.isBouncing = false; // Bounce-debounce to prevent double-bounce.
         //color information
         this.light = Math.floor(Math.random() * 50) + 50;
@@ -52,7 +48,7 @@ var Particle = (function () {
         this.opacity = 0.8;
         this.particleSystem = ps;
         this.position = new Vector(state.mousePosition.x, state.mousePosition.y); // Instantiate Particle at mouse position
-        this.radius = Math.floor(Math.random() * this.maxRadius) + this.minRadius; // Set random radius between minRadius and minRadius + maxRadius (I guess)
+        this.radius = Math.floor(Math.random() * state.config.maxRadius) + state.config.minRadius; // Set random radius between minRadius and minRadius + maxRadius (I guess)
     }
     Particle.prototype.draw = function (ctx) {
         ctx.globalCompositeOperation = 'lighter';
@@ -65,12 +61,12 @@ var Particle = (function () {
     Particle.prototype.tick = function () {
         // Remove particle after X amount of ticks
         this.age++;
-        if (++this.age > this.maxAge) {
+        if (++this.age > state.config.maxAge) {
             this.particleSystem.removeParticle(this);
         }
         // Fade out
-        this.opacity = this.opacity * this.shrinkingFactor;
-        this.radius = this.radius * this.shrinkingFactor;
+        this.opacity = this.opacity * state.config.shrinkingFactor;
+        this.radius = this.radius * state.config.shrinkingFactor;
         // Add gravitational acceleration to particle velocity.
         this.velocity.add(state.config.gravity);
         // Add velocity to particle location.
@@ -78,7 +74,7 @@ var Particle = (function () {
         // Check for bounce
         if (this.position.y + this.radius >= state.config.height - state.config.floorHeight && this.isBouncing == false) {
             // Bouncing. Skipping bounce-check for next frame.
-            this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction * this.radius / this.maxRadius;
+            this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction * this.radius / state.config.maxRadius;
             this.isBouncing = true;
         }
         else {
@@ -202,7 +198,11 @@ var state = {
         width: 500,
         height: 500,
         bounceFriction: 0.6,
-        floorHeight: 200
+        floorHeight: 200,
+        maxRadius: 6,
+        minRadius: 2,
+        shrinkingFactor: 0.99,
+        maxAge: 300
     },
     mousePosition: new Vector(100, 100),
     lastCalled: Date.now(),
