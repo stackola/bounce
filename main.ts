@@ -272,7 +272,7 @@ var state: {
 		gravity: new Vector(0, 0.4),
 		width: 500,
 		height: 500,
-		bounceFriction: 0.6,
+		bounceFriction: 0.8,
 		floorHeight: 200,
 		maxRadius: 6,
 		minRadius: 2,

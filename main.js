@@ -74,7 +74,7 @@ var Particle = (function () {
         // Check for bounce
         if (this.position.y + this.radius >= state.config.height - state.config.floorHeight && this.isBouncing == false) {
             // Bouncing. Skipping bounce-check for next frame.
-            this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction * this.radius / state.config.maxRadius;
+            this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction;
             this.isBouncing = true;
         }
         else {
@@ -197,7 +197,7 @@ var state = {
         gravity: new Vector(0, 0.4),
         width: 500,
         height: 500,
-        bounceFriction: 0.6,
+        bounceFriction: 0.8,
         floorHeight: 200,
         maxRadius: 6,
         minRadius: 2,
