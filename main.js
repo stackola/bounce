@@ -2,7 +2,7 @@ var Vector = (function () {
     function Vector(x, y) {
         this.x = x;
         this.y = y;
-        console.log("created particle", this);
+        //console.log("created particle", this);
     }
     Vector.prototype.add = function (v) {
         this.x += v.x;
@@ -14,6 +14,12 @@ var Vector = (function () {
         this.y = this.y * n;
         return this;
     };
+    Vector.prototype.normalize = function () {
+        var l = Math.sqrt(this.x * this.x + this.y * this.y);
+        this.x = this.x / l;
+        this.y = this.y / l;
+        return this;
+    };
     Vector.random = function () {
         return new Vector(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100));
     };
@@ -21,12 +27,13 @@ var Vector = (function () {
 }());
 var Particle = (function () {
     function Particle() {
-        this.velocity = Vector.random().add(new Vector(-50, -50)).mult(0.03);
-        this.maxRadius = 3;
+        this.velocity = Vector.random().add(new Vector(-50, -50)).normalize().mult(3);
+        this.maxRadius = 4;
         this.minRadius = 1;
         this.shrinkingFactor = 0.99;
         this.age = 0;
-        this.maxAge = 100;
+        this.maxAge = 300;
+        this.isBouncing = false;
         this.position = new Vector(config.mousePosition.x, config.mousePosition.y);
         this.radius = Math.floor(Math.random() * this.maxRadius) + this.minRadius;
     }
@@ -37,12 +44,19 @@ var Particle = (function () {
             ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2, true);
             ctx.closePath();
             ctx.fill();
-            console.log("drw part");
+            //console.log("drw part");
         }
     };
     Particle.prototype.tick = function () {
         this.age++;
         // change velocity
+        if (this.position.y >= config.height - config.floorHeight && this.isBouncing == false) {
+            this.velocity.y = this.velocity.y * -1 * config.bounceFriction;
+            this.isBouncing = true;
+        }
+        else {
+            this.isBouncing = false;
+        }
         // 1. Gravity:
         this.velocity.add(config.gravity);
         // apply movement
@@ -102,8 +116,9 @@ var config = {
     gravity: new Vector(0, 0.1),
     width: 500,
     height: 500,
-    bounceFriction: 0.9,
-    mousePosition: new Vector(100, 100)
+    bounceFriction: 0.8,
+    mousePosition: new Vector(100, 100),
+    floorHeight: 100
 };
 var g = new Game();
 function loop() {
@@ -112,4 +127,4 @@ function loop() {
     g.draw();
 }
 loop();
-setInterval(g.particleSystem._addParticle, 100);
+setInterval(g.particleSystem._addParticle, 50);
