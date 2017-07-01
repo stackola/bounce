@@ -41,8 +41,8 @@ var Particle = (function () {
         this.maxAge = 300; // After how many ticks do we no longer draw the Particle?
         this.isBouncing = false; // Bounce-debounce to prevent double-bounce.
         this.light = Math.floor(Math.random() * 50) + 50; // Color stuff
-        this.hue = Math.floor(Math.random() * 30) + 20; // Color stuff
-        this.opacity = 1; // Color stuff
+        this.hue = Math.floor(Math.random() * 20) + 20; // Color stuff
+        this.opacity = 0.8; // Color stuff
         this.position = new Vector(config.mousePosition.x, config.mousePosition.y); // Instantiate Particle at mouse position
         this.radius = Math.floor(Math.random() * this.maxRadius) + this.minRadius; // Set random radius between minRadius and minRadius + maxRadius (I guess)
     }
@@ -59,6 +59,10 @@ var Particle = (function () {
     };
     Particle.prototype.tick = function () {
         this.opacity = this.opacity * this.shrinkingFactor;
+        this.light -= 0.5;
+        if (this.light < 0) {
+            this.light == 0;
+        }
         this.age++;
         // Check for bounce
         if (this.position.y >= config.height - config.floorHeight && this.isBouncing == false) {
@@ -113,7 +117,7 @@ var Game = (function () {
         this.context = this.canvas.getContext('2d');
         this.context2 = this.canvas2.getContext('2d');
         this.context.globalCompositeOperation = 'lighter';
-        this.context2.globalCompositeOperation = 'lighter';
+        //this.context2.globalCompositeOperation = 'lighter';
         this.particleSystem = new ParticleSystem();
         // Init to browser size.
         this.resize();
@@ -157,6 +161,7 @@ var Game = (function () {
         this.context.fillText(fps.toFixed(0) + " fps", 20, 20);
     };
     Game.prototype.tick = function () {
+        this.particleSystem._addParticle();
         this.particleSystem.tick();
     };
     return Game;
@@ -182,8 +187,6 @@ function loop() {
 }
 //start loop.
 loop();
-// Async: Add new particle in intervals.
-setInterval(g.particleSystem._addParticle, 10);
 function countFps() {
     if (!lastCalledTime) {
         lastCalledTime = Date.now();

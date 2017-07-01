@@ -54,8 +54,8 @@ class Particle {
 	maxAge: number = 300; // After how many ticks do we no longer draw the Particle?
 	isBouncing: boolean = false; // Bounce-debounce to prevent double-bounce.
 	light: number = Math.floor(Math.random() * 50) + 50; // Color stuff
-	hue: number = Math.floor(Math.random() * 30) + 20; // Color stuff
-	opacity: number = 1; // Color stuff
+	hue: number = Math.floor(Math.random() * 20) + 20; // Color stuff
+	opacity: number = 0.8; // Color stuff
 
 	constructor() {
 		this.position = new Vector(config.mousePosition.x, config.mousePosition.y); // Instantiate Particle at mouse position
@@ -78,6 +78,10 @@ class Particle {
 
 	tick(): void {
 		this.opacity = this.opacity * this.shrinkingFactor;
+		this.light -= 0.5;
+		if (this.light < 0){
+			this.light == 0;
+		}
 		this.age++;
 		// Check for bounce
 		if (this.position.y >= config.height - config.floorHeight && this.isBouncing == false) {
@@ -146,7 +150,7 @@ class Game {
 		this.context2 = this.canvas2.getContext('2d');
 
 		this.context.globalCompositeOperation = 'lighter';
-		this.context2.globalCompositeOperation = 'lighter';
+		//this.context2.globalCompositeOperation = 'lighter';
 
 
 
@@ -206,6 +210,7 @@ class Game {
 	}
 
 	tick(): void {
+		this.particleSystem._addParticle();
 		this.particleSystem.tick();
 	}
 }
@@ -235,8 +240,7 @@ var g = new Game();
 
 //Game loop
 function loop() {
-	
-	countFps();
+	countFps();	
 	// Buffered frames.
 	requestAnimationFrame(loop);
 	g.tick();
@@ -247,8 +251,6 @@ function loop() {
 //start loop.
 loop();
 
-// Async: Add new particle in intervals.
-setInterval(g.particleSystem._addParticle, 10);
 
 
 
