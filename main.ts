@@ -52,7 +52,7 @@ class Particle {
 
 	particleSystem: ParticleSystem;
 	position: Vector;
-	velocity: Vector = Vector.random().scale(Math.random() * 5 + 1); // New random velocity Vector with length 1-6
+	velocity: Vector = Vector.random().scale(Math.random() * 7 + 1); // New random velocity Vector with length 1-6
 	radius: number;
 	age: number = 0; // How many ticks have we been tracking this Particle?
 	isBouncing: boolean = false; // Bounce-debounce to prevent double-bounce.
@@ -96,7 +96,7 @@ class Particle {
 		// Check for bounce
 		if (this.position.y + this.radius >= state.config.height - state.config.floorHeight && this.isBouncing == false) {
 			// Bouncing. Skipping bounce-check for next frame.
-			this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction;
+			this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction + ( Math.random() * 0.1 ) ;
 			this.isBouncing = true;
 		} else {
 			this.isBouncing = false;
@@ -196,13 +196,13 @@ class Game {
 		this.canvas.height = state.config.height;
 		this.shadowCanvas.width = state.config.width;
 		this.shadowCanvas.height = state.config.height;
-		state.config.floorHeight = state.config.height / 3;
+		state.config.floorHeight = state.config.height / 5;
 
 		// Flip and blur the reflection canvas.
 		this.shadowContext.setTransform(1, 0, 0, 1, 0, 0);
 		this.shadowContext.scale(1, -1);
 		this.shadowContext.translate(0, -5 - (state.config.height + (state.config.height - 2 * state.config.floorHeight)));
-		this.shadowContext['filter'] = "blur(4px)";
+		this.shadowContext['filter'] = "blur(8px)";
 	}
 
 	setMousePosition(canvas, evt): void {
