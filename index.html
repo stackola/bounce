@@ -4,15 +4,32 @@
 	<meta charset="UTF-8">
 	<title>bounce</title>
 	<style>
-		#c{
+		body,
+		html {
+			margin: 0;
+			padding: 0;		
+			background-color: black;
+			overflow: hidden;
+		}
+		#c{			
+			position: absolute;
+			z-index: 2;
+			width: 100%;
+			height: 100%;
+		}
+
+		#c2{
 			background: black;
-			width: 500px;
-			height: 500px;
+			position: absolute;	
+			width: 100%;
+			height: 100%;		
 		}
 	</style>
 </head>
 <body>
 	<canvas id="c"></canvas>
-	<script src="main.js" width="500" height="500" ></script>
+	<canvas id="c2"></canvas>
+	<script src="http://www.quasimondo.com/StackBlurForCanvas/StackBlur.js"  ></script>
+	<script src="main.js"  ></script>
 </body>
 </html>
