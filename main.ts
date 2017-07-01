@@ -52,7 +52,7 @@ class Particle {
 	
 	particleSystem: ParticleSystem;
 	position: Vector;
-	velocity: Vector = Vector.random().scale(Math.random() * 3 + 1); // New random velocity Vector with length 1-4
+	velocity: Vector = Vector.random().scale(Math.random() * 5 + 1); // New random velocity Vector with length 1-6
 	radius: number;
 	maxRadius: number = 6;
 	minRadius: number = 2;
@@ -262,7 +262,8 @@ var state: {
 		width: number,
 		height: number,
 		bounceFriction: number,
-		floorHeight: number
+		floorHeight: number,
+		
 	},
 	mousePosition: Vector,
 	lastCalled: number,
@@ -280,9 +281,9 @@ var state: {
 	fps: 0
 };
 
+var g:Game;
 
 
-var g = new Game();
 
 //Game loop
 function loop() {
@@ -292,4 +293,7 @@ function loop() {
 }
 
 //start loop.
-loop();
+document.addEventListener("DOMContentLoaded", function(event) { 
+g = new Game();
+	loop();
+});

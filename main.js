@@ -1,7 +1,9 @@
 // Bouncy Balls
 // Inspired by https://codepen.io/waisbren89/pen/gwvVpP
 // License: WTFPL
-// A simple 2D Vector
+/////////////////////////////////////////////////////////////////////
+////////////////////////////// Vector ///////////////////////////////
+/////////////////////////////////////////////////////////////////////
 var Vector = (function () {
     function Vector(x, y) {
         this.x = x;
@@ -32,9 +34,12 @@ var Vector = (function () {
     };
     return Vector;
 }());
+/////////////////////////////////////////////////////////////////////
+///////////////////////////// Particle //////////////////////////////
+/////////////////////////////////////////////////////////////////////
 var Particle = (function () {
     function Particle(ps) {
-        this.velocity = Vector.random().scale(Math.random() * 3 + 1); // New random velocity Vector with length 1-4
+        this.velocity = Vector.random().scale(Math.random() * 5 + 1); // New random velocity Vector with length 1-6
         this.maxRadius = 6;
         this.minRadius = 2;
         this.shrinkingFactor = 0.99; // How much to shrink by, every frame. (newRadius = Radius * shrinkingFactor )
@@ -86,6 +91,9 @@ var Particle = (function () {
     };
     return Particle;
 }());
+/////////////////////////////////////////////////////////////////////
+////////////////////////// Particle System //////////////////////////
+/////////////////////////////////////////////////////////////////////
 var ParticleSystem = (function () {
     function ParticleSystem() {
         this.particles = [];
@@ -115,7 +123,9 @@ var ParticleSystem = (function () {
     };
     return ParticleSystem;
 }());
-// Game Class
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////// Game ////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 var Game = (function () {
     function Game() {
         this.canvas = document.getElementById('canvas');
@@ -198,7 +208,7 @@ var state = {
     lastCalled: Date.now(),
     fps: 0
 };
-var g = new Game();
+var g;
 //Game loop
 function loop() {
     requestAnimationFrame(loop);
@@ -206,4 +216,7 @@ function loop() {
     g.draw();
 }
 //start loop.
-loop();
+document.addEventListener("DOMContentLoaded", function (event) {
+    g = new Game();
+    loop();
+});
