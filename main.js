@@ -1,19 +1,20 @@
-// Standard Vector class. X,Y with some methods.
-var lastCalledTime;
-var fps;
+// Bouncy Balls
+// Inspired by https://codepen.io/waisbren89/pen/gwvVpP
+// License: WTFPL
+// A simple 2D Vector
 var Vector = (function () {
     function Vector(x, y) {
         this.x = x;
         this.y = y;
     }
-    // Adds a Vector to the current vector.
+    // Adds a Vector to the current Vector.
     Vector.prototype.add = function (v) {
         this.x += v.x;
         this.y += v.y;
         return this;
     };
-    // Multiply by scalar.
-    Vector.prototype.mult = function (n) {
+    // Multiply both axis by a factor.
+    Vector.prototype.scale = function (n) {
         this.x = this.x * n;
         this.y = this.y * n;
         return this;
@@ -25,88 +26,90 @@ var Vector = (function () {
         this.y = this.y / l;
         return this;
     };
-    // Create a random Vector for X,Y between 0 and 100.
+    // Create a random Vector of length 1
     Vector.random = function () {
-        return new Vector(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100));
+        return new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
     };
     return Vector;
 }());
 var Particle = (function () {
-    function Particle() {
-        this.velocity = Vector.random().add(new Vector(-50, -50)).normalize().mult(Math.random() * 3 + 1); // New random force Vector with length 1-4
-        this.maxRadius = 4;
+    function Particle(ps) {
+        this.velocity = Vector.random().scale(Math.random() * 3 + 1); // New random velocity Vector with length 1-4
+        this.maxRadius = 6;
         this.minRadius = 2;
         this.shrinkingFactor = 0.99; // How much to shrink by, every frame. (newRadius = Radius * shrinkingFactor )
         this.age = 0; // How many ticks have we been tracking this Particle?
         this.maxAge = 300; // After how many ticks do we no longer draw the Particle?
         this.isBouncing = false; // Bounce-debounce to prevent double-bounce.
-        this.light = Math.floor(Math.random() * 50) + 50; // Color stuff
-        this.hue = Math.floor(Math.random() * 20) + 20; // Color stuff
-        this.opacity = 0.8; // Color stuff
-        this.position = new Vector(config.mousePosition.x, config.mousePosition.y); // Instantiate Particle at mouse position
+        //color information
+        this.light = Math.floor(Math.random() * 50) + 50;
+        this.hue = Math.floor(Math.random() * 20) + 20;
+        this.opacity = 0.8;
+        this.particleSystem = ps;
+        this.position = new Vector(state.mousePosition.x, state.mousePosition.y); // Instantiate Particle at mouse position
         this.radius = Math.floor(Math.random() * this.maxRadius) + this.minRadius; // Set random radius between minRadius and minRadius + maxRadius (I guess)
     }
     Particle.prototype.draw = function (ctx) {
-        if (this.position.y > config.height - config.floorHeight) {
-            this.position.y = config.height - config.floorHeight;
-        }
-        // Draw
-        ctx.fillStyle = "hsla(" + this.hue + ",100%, " + this.light + "%, " + this.opacity + ")";
+        ctx.globalCompositeOperation = 'lighter';
         ctx.beginPath();
+        ctx.fillStyle = "hsla(" + this.hue + ",100%, " + this.light + "%, " + this.opacity + ")";
         ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2, true);
         ctx.closePath();
         ctx.fill();
     };
     Particle.prototype.tick = function () {
-        this.opacity = this.opacity * this.shrinkingFactor;
-        //this.light -= 0.5;
-        //if (this.light < 0){
-        //	this.light == 0;
-        //}
+        // Remove particle after X amount of ticks
         this.age++;
+        if (++this.age > this.maxAge) {
+            this.particleSystem.removeParticle(this);
+        }
+        // Fade out
+        this.opacity = this.opacity * this.shrinkingFactor;
+        this.radius = this.radius * this.shrinkingFactor;
+        // Add gravitational acceleration to particle velocity.
+        this.velocity.add(state.config.gravity);
+        // Add velocity to particle location.
+        this.position.add(this.velocity);
         // Check for bounce
-        if (this.position.y >= config.height - config.floorHeight && this.isBouncing == false) {
-            this.velocity.y = this.velocity.y * -1 * config.bounceFriction * this.radius / this.maxRadius; // Bouncing. Skipping bounce-check for next frame.
+        if (this.position.y + this.radius >= state.config.height - state.config.floorHeight && this.isBouncing == false) {
+            // Bouncing. Skipping bounce-check for next frame.
+            this.velocity.y = this.velocity.y * -1 * state.config.bounceFriction * this.radius / this.maxRadius;
             this.isBouncing = true;
         }
         else {
             this.isBouncing = false;
         }
-        // Add gravitational acceleration to particle velocity.
-        this.velocity.add(config.gravity);
-        // Add velocity to particle location.
-        this.position.add(this.velocity);
-        /// Shrink radius.
-        this.radius = this.radius * this.shrinkingFactor;
+        // If we are below the floor, go to the floor.
+        if (this.position.y + this.radius > state.config.height - state.config.floorHeight) {
+            this.position.y = state.config.height - state.config.floorHeight - this.radius;
+        }
     };
     return Particle;
 }());
 var ParticleSystem = (function () {
     function ParticleSystem() {
         this.particles = [];
-        this._addParticle = function () {
-            this.addParticle();
-        }.bind(this);
-        this.addParticle();
     }
     ParticleSystem.prototype.draw = function (ctx) {
         for (var i = 0; i < this.particles.length; ++i) {
             this.particles[i].draw(ctx);
         }
     };
-    ParticleSystem.prototype.addParticle = function () {
-        this.particles.push(new Particle());
+    ParticleSystem.prototype.spawnParticle = function () {
+        this.particles.push(new Particle(this));
+    };
+    // Removes a particle
+    ParticleSystem.prototype.removeParticle = function (p) {
+        var pos = this.particles.indexOf(p);
+        this.particles.splice(pos, 1);
     };
     ParticleSystem.prototype.tick = function () {
-        this._addParticle();
-        this._addParticle();
-        this._addParticle();
-        // Filter old particles from array
-        this.particles = this.particles.filter(function (v) {
-            return v.age < v.maxAge;
-        });
+        // Add 2 new particles at mouse location
+        this.spawnParticle();
+        this.spawnParticle();
         // Call tick on all particles left
-        for (var i = 0; i < this.particles.length; ++i) {
+        // Iterate backwards because we are removing elements from the array (also it's faster)
+        for (var i = this.particles.length; i--;) {
             this.particles[i].tick();
         }
     };
@@ -115,86 +118,92 @@ var ParticleSystem = (function () {
 // Game Class
 var Game = (function () {
     function Game() {
-        this.canvas = document.getElementById('c');
-        this.canvas2 = document.getElementById('c2');
+        this.canvas = document.getElementById('canvas');
+        this.shadowCanvas = document.getElementById('shadowCanvas');
         this.context = this.canvas.getContext('2d');
-        this.context2 = this.canvas2.getContext('2d');
-        this.context.globalCompositeOperation = 'lighter';
-        //this.context2.globalCompositeOperation = 'lighter';
-        this.particleSystem = new ParticleSystem();
-        // Init to browser size.
+        this.shadowContext = this.shadowCanvas.getContext('2d');
+        // Init the browser size.
         this.resize();
         // Bind events
         window.onresize = this.resize.bind(this);
         this.canvas.addEventListener('mousemove', function (evt) {
-            config.mousePosition = this.getMousePos(this.canvas, evt);
+            this.setMousePosition(this.canvas, evt);
         }.bind(this), false);
+        // Initialize the particle system
+        this.particleSystem = new ParticleSystem();
     }
     Game.prototype.resize = function () {
-        config.width = document.getElementById('c').clientWidth;
-        config.height = document.getElementById('c').clientHeight;
-        this.canvas.width = config.width;
-        this.canvas.height = config.height;
-        this.canvas2.width = config.width;
-        this.canvas2.height = config.height;
-        //Flip, mirror and blur ctx2.
-        this.context2.setTransform(1, 0, 0, 1, 0, 0);
-        this.context2.scale(1, -1);
-        this.context2.translate(0, -5 - (config.height + (config.height - 2 * config.floorHeight)));
-        this.context2['filter'] = "blur(4px)";
+        state.config.width = this.canvas.clientWidth;
+        state.config.height = this.canvas.clientHeight;
+        // Set width and height of both canvas
+        this.canvas.width = state.config.width;
+        this.canvas.height = state.config.height;
+        this.shadowCanvas.width = state.config.width;
+        this.shadowCanvas.height = state.config.height;
+        state.config.floorHeight = state.config.height / 3;
+        // Flip and blur the reflection canvas.
+        this.shadowContext.setTransform(1, 0, 0, 1, 0, 0);
+        this.shadowContext.scale(1, -1);
+        this.shadowContext.translate(0, -5 - (state.config.height + (state.config.height - 2 * state.config.floorHeight)));
+        this.shadowContext['filter'] = "blur(4px)";
     };
-    Game.prototype.getMousePos = function (canvas, evt) {
+    Game.prototype.setMousePosition = function (canvas, evt) {
+        // Retrieve and set local mouse position
         var rect = canvas.getBoundingClientRect();
         var v = new Vector(evt.clientX - rect.left, evt.clientY - rect.top);
-        if (v.y > config.height - config.floorHeight) {
-            v.y = config.height - config.floorHeight;
+        if (v.y > state.config.height - state.config.floorHeight) {
+            v.y = state.config.height - state.config.floorHeight;
         }
-        return v;
+        state.mousePosition = v;
     };
     Game.prototype.draw = function () {
         // Clear canvases
-        this.context.clearRect(0, 0, config.width, config.height);
-        this.context2.clearRect(0, 0, config.width, config.height);
+        this.context.clearRect(0, 0, state.config.width, state.config.height);
+        this.shadowContext.clearRect(0, 0, state.config.width, state.config.height);
         // Draw canvases
         this.particleSystem.draw(this.context);
-        this.context2.drawImage(this.canvas, 0, 0);
-        // Hacky FPS counter
+        this.shadowContext.drawImage(this.canvas, 0, 0);
+        // Draw FPS counter
         this.context.fillStyle = "#ffffff";
         this.context.font = "12px Arial";
-        this.context.fillText(fps.toFixed(0) + " fps", 20, 20);
+        this.context.fillText(state.fps + " fps", 20, 20);
     };
     Game.prototype.tick = function () {
         this.particleSystem.tick();
+        this.countFps();
+    };
+    Game.prototype.countFps = function () {
+        var delta = (Date.now() - state.lastCalled) / 1000;
+        state.lastCalled = Date.now();
+        state.fps = 1 / delta;
+        state.fps = Math.round(state.fps);
     };
     return Game;
 }());
-// Configure global values
-var config = {
-    gravity: new Vector(0, 0.4),
-    width: 500,
-    height: 500,
-    bounceFriction: 0.6,
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+////////////////////// Done defining classes ////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+// Initial game state
+var state = {
+    config: {
+        gravity: new Vector(0, 0.4),
+        width: 500,
+        height: 500,
+        bounceFriction: 0.6,
+        floorHeight: 200
+    },
     mousePosition: new Vector(100, 100),
-    floorHeight: 200
+    lastCalled: Date.now(),
+    fps: 0
 };
-// Init game
 var g = new Game();
 //Game loop
 function loop() {
-    countFps();
-    // Buffered frames.
     requestAnimationFrame(loop);
     g.tick();
     g.draw();
 }
 //start loop.
 loop();
-function countFps() {
-    if (!lastCalledTime) {
-        lastCalledTime = Date.now();
-        fps = 0;
-    }
-    var delta = (Date.now() - lastCalledTime) / 1000;
-    lastCalledTime = Date.now();
-    fps = 1 / delta;
-}
